@@ -1,27 +1,62 @@
-import { Link, Outlet } from "remix";
+import { NavLink, Outlet } from "remix";
+
+function LinkItem({ linkTo = "", text = "", iconName = "", prefetch = false }) {
+    return (
+        <li className="flex align-middle gap-x-1 ">
+            <span className="material-icons">{iconName}</span>
+            <NavLink
+                prefetch={`${prefetch ? "intent" : "none"}`}
+                className={({ isActive }) =>
+                    ` ${
+                        isActive
+                            ? " decoration-green-500 underline decoration-2 "
+                            : ""
+                    }`
+                }
+                to={linkTo}
+            >
+                {text}
+            </NavLink>
+        </li>
+    );
+}
 
 export default function Sales() {
     return (
         <>
             <header>
-                <h2 className="font-bold text-lg">Sales</h2>
+                <h2 className="font-bold text-xl mb-6 flex align-middle gap-x-1">
+                    <span className="material-icons">login</span>
+                    Sales
+                </h2>
                 <nav className="px-0 py-4">
-                    <ul className="flex gap-2">
-                        <li>
-                            <Link to="overview">Overview</Link>
-                        </li>
-                        <li>
-                            <Link to="subscriptions">Subscriptions</Link>
-                        </li>
-                        <li>
-                            <Link to="invoices">Invoices</Link>
-                        </li>
-                        <li>
-                            <Link to="customers">Customers</Link>
-                        </li>
-                        <li>
-                            <Link to="deposits">Deposits</Link>
-                        </li>
+                    <ul className="flex gap-12">
+                        <LinkItem
+                            text="Overview"
+                            linkTo="overview"
+                            iconName="panorama"
+                        />
+                        <LinkItem
+                            text="Subscriptions"
+                            linkTo="subscriptions"
+                            iconName="loyalty"
+                        />
+                        <LinkItem
+                            text="Invoices"
+                            linkTo="invoices"
+                            iconName="receipt_long"
+                            prefetch
+                        />
+                        <LinkItem
+                            text="Customers"
+                            linkTo="customers"
+                            iconName="hail"
+                        />
+                        <LinkItem
+                            text="Deposits"
+                            linkTo="deposits"
+                            iconName="savings"
+                        />
                     </ul>
                 </nav>
             </header>

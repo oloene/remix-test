@@ -8,7 +8,7 @@ import {
     useCatch,
 } from "remix";
 import styles from "./tailwind.css";
-import Navbar from "~/components/navbar";
+import Navbar from "~/components/Navbar";
 
 export function links() {
     return [
@@ -28,6 +28,10 @@ export function links() {
         {
             rel: "stylesheet",
             href: "https://fonts.googleapis.com/css2?family=Poppins&display=swap",
+        },
+        {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/icon?family=Material+Icons",
         },
     ];
 }
@@ -132,7 +136,7 @@ function Layout({ children }) {
             <aside className="bg-slate-200 h-full w-52 fixed shadow-xl">
                 <Navbar />
             </aside>
-            <main className="ml-52 p-12">{children}</main>
+            <main className="ml-52 py-6 px-10">{children}</main>
         </>
     );
 }
