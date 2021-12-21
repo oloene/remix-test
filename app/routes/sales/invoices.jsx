@@ -1,65 +1,103 @@
-import { json, Link, Outlet, useLoaderData } from "remix";
+import { json, NavLink, Outlet, useLoaderData } from "remix";
+import Progress from "~/components/Progress";
 import { getInvoices } from "~/db";
+import { isAfter } from "date-fns";
+import { formatToCurrency, invoiceDue } from "~/utils/invoice";
 
 export const loader = async () => {
-    const data = await getInvoices();
+  const data = await getInvoices();
 
-    const ret = data.map(
-        ({ invoiceId, title, netTotalAmount, dueDate, isPaid }) => ({
-            invoiceId,
-            title,
-            netTotalAmount,
-            dueDate,
-            isPaid,
-        })
-    );
+  const invoices = data.map(
+    ({ invoiceId, title, netTotalAmount, dueDate, isPaid }) => ({
+      invoiceId,
+      title,
+      netTotalAmount,
+      dueDate,
+      isPaid,
+    })
+  );
 
-    return json(ret);
+  const today = new Date();
+
+  const invoiceAmounts = invoices.reduce((acc, invoice) => {
+    if (!("totalAmount" in acc)) acc["totalAmount"] = 0;
+    if (!("overdueAmount" in acc)) acc["overdueAmount"] = 0;
+    if (!("dueSoon" in acc)) acc["dueSoon"] = 0;
+
+    if (invoice.isPaid) return acc;
+
+    if (isAfter(today, new Date(invoice.dueDate))) {
+      acc["overdueAmount"] += invoice.netTotalAmount;
+    } else {
+      acc["dueSoon"] += invoice.netTotalAmount;
+    }
+
+    acc["totalAmount"] += invoice.netTotalAmount;
+
+    return acc;
+  }, {});
+
+  return json({
+    invoiceAmounts,
+    invoices,
+  });
 };
 
 export default function Invoices() {
-    const data = useLoaderData();
-    console.log(data);
+  const { invoices, invoiceAmounts } = useLoaderData();
 
-    const dueDate = (invoiceDue) => {
-        return "DUE DATE";
-    };
+  const amountOverduePercentage =
+    ((invoiceAmounts?.overdueAmount ?? 0) /
+      (invoiceAmounts?.totalAmount ?? 1)) *
+    100;
 
-    return (
-        <>
-            <header>
-                <div>
-                    <h3>overdue</h3>
-                    <span>$10,800</span>
-                </div>
-                <div>*progress-bar*</div>
-                <div>
-                    <h3>due soon</h3>
-                    <span>$62,000</span>
-                </div>
-            </header>
-            <section>
-                <h3>Invoice list</h3>
-                <aside>
-                    <ul>
-                        {data?.map((invoice) => (
-                            <li key={invoice.invoiceId}>
-                                <Link to={invoice.invoiceId}>
-                                    <div>
-                                        <span>{invoice.title}</span>
-                                        &emsp;
-                                        <span>{invoice.netTotalAmount}</span>
-                                    </div>
-                                    <div>{dueDate(invoice.dueDate)}</div>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </aside>
-                <div>
-                    <Outlet />
-                </div>
-            </section>
-        </>
-    );
+  return (
+    <>
+      <header className="grid grid-cols-progress items-center gap-3 mt-12 mb-12 w-full">
+        <div className="flex flex-col items-center">
+          <h3 className="text-red-400 font-bold">overdue</h3>
+          <span className="text-cyan-800">
+            {formatToCurrency(invoiceAmounts.overdueAmount)}
+          </span>
+        </div>
+        <Progress startPercentage={amountOverduePercentage} />
+        <div className="flex flex-col items-center">
+          <h3 className="text-yellow-400 font-bold">due soon</h3>
+          <span className="text-cyan-800">
+            {formatToCurrency(invoiceAmounts.dueSoon)}
+          </span>
+        </div>
+      </header>
+      <section className="flex">
+        <aside className="border-2 flex-full border-slate-200 rounded-bl-md rounded-tl-md">
+          <ul>
+            {invoices?.map((invoice) => (
+              <li key={invoice.invoiceId}>
+                <NavLink
+                  to={invoice.invoiceId}
+                  className={({ isActive }) =>
+                    `p-4 inline-block w-full ${
+                      isActive ? "bg-sky-50" : "hover:bg-green-50"
+                    }`
+                  }
+                >
+                  <div className="flex">
+                    <span className="font-bold">{invoice.title}</span>
+                    &emsp;
+                    <span className="ml-auto font-bold">
+                      {formatToCurrency(invoice.netTotalAmount)}
+                    </span>
+                  </div>
+                  <div className="text-right">{invoiceDue(invoice)}</div>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </aside>
+        <div className="border-t-2 border-r-2 flex-full border-b-2 border-slate-200 p-8 rounded-tr-md rounded-br-md">
+          <Outlet />
+        </div>
+      </section>
+    </>
+  );
 }
