@@ -8,7 +8,7 @@ import {
   useCatch,
 } from "remix";
 import styles from "./tailwind.css";
-import Navbar from "~/components/Navbar";
+import Navbar from "./components/Navbar";
 
 export function links() {
   return [
@@ -116,6 +116,7 @@ function Document({ children, title }) {
       </head>
       <body className="min-h-screen">
         {children}
+        <div id="portal" />
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === "development" && <LiveReload />}

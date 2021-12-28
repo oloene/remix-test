@@ -1,8 +1,8 @@
 import { json, NavLink, Outlet, useLoaderData } from "remix";
-import Progress from "~/components/Progress";
-import { getInvoices } from "~/db";
+import Progress from "../../components/Progress";
+import { getInvoices } from "../../db";
 import { isAfter } from "date-fns";
-import { formatToCurrency, invoiceDue } from "~/utils/invoice";
+import { formatToCurrency, invoiceDue } from "../../utils/invoice";
 
 export const loader = async () => {
   const data = await getInvoices();
@@ -53,51 +53,57 @@ export default function Invoices() {
 
   return (
     <>
-      <header className="grid grid-cols-progress items-center gap-3 mt-12 mb-12 w-full">
-        <div className="flex flex-col items-center">
-          <h3 className="text-red-400 font-bold">overdue</h3>
-          <span className="text-cyan-800">
-            {formatToCurrency(invoiceAmounts.overdueAmount)}
-          </span>
-        </div>
-        <Progress startPercentage={amountOverduePercentage} />
-        <div className="flex flex-col items-center">
-          <h3 className="text-yellow-400 font-bold">due soon</h3>
-          <span className="text-cyan-800">
-            {formatToCurrency(invoiceAmounts.dueSoon)}
-          </span>
-        </div>
-      </header>
-      <section className="flex">
-        <aside className="border-2 flex-full border-slate-200 rounded-bl-md rounded-tl-md">
-          <ul>
-            {invoices?.map((invoice) => (
-              <li key={invoice.invoiceId}>
-                <NavLink
-                  to={invoice.invoiceId}
-                  className={({ isActive }) =>
-                    `p-4 inline-block w-full ${
-                      isActive ? "bg-sky-50" : "hover:bg-green-50"
-                    }`
-                  }
-                >
-                  <div className="flex">
-                    <span className="font-bold">{invoice.title}</span>
-                    &emsp;
-                    <span className="ml-auto font-bold">
-                      {formatToCurrency(invoice.netTotalAmount)}
-                    </span>
-                  </div>
-                  <div className="text-right">{invoiceDue(invoice)}</div>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </aside>
-        <div className="border-t-2 border-r-2 flex-full border-b-2 border-slate-200 p-8 rounded-tr-md rounded-br-md">
-          <Outlet />
-        </div>
-      </section>
+      {invoices.length < 1 ? (
+        <h1 className="text-center text-5xl mt-16">No invoices</h1>
+      ) : (
+        <>
+          <header className="grid grid-cols-progress items-center gap-3 mt-12 mb-12 w-full">
+            <div className="flex flex-col items-center">
+              <h3 className="font-bold">overdue</h3>
+              <span className="text-cyan-800">
+                {formatToCurrency(invoiceAmounts.overdueAmount)}
+              </span>
+            </div>
+            <Progress startPercentage={amountOverduePercentage} />
+            <div className="flex flex-col items-center">
+              <h3 className="font-bold">due soon</h3>
+              <span className="text-cyan-800">
+                {formatToCurrency(invoiceAmounts.dueSoon)}
+              </span>
+            </div>
+          </header>
+          <section className="flex max-h-[500px]">
+            <aside className="border-2 flex-full border-slate-200 rounded-bl-md rounded-tl-md overflow-y-auto custom-scrollbar">
+              <ul>
+                {invoices.map((invoice) => (
+                  <li key={invoice.invoiceId}>
+                    <NavLink
+                      to={invoice.invoiceId}
+                      className={({ isActive }) =>
+                        `p-4 inline-block w-full ${
+                          isActive ? "bg-sky-50" : "hover:bg-green-50"
+                        }`
+                      }
+                    >
+                      <div className="flex">
+                        <span className="font-bold">{invoice.title}</span>
+                        &emsp;
+                        <span className="ml-auto font-bold">
+                          {formatToCurrency(invoice.netTotalAmount)}
+                        </span>
+                      </div>
+                      <div className="text-right">{invoiceDue(invoice)}</div>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+            <div className="border-t-2 border-r-2 flex-full border-b-2 border-slate-200 rounded-tr-md rounded-br-md">
+              <Outlet />
+            </div>
+          </section>
+        </>
+      )}
     </>
   );
 }

@@ -22,6 +22,28 @@ const invoices = [
     ],
   },
   {
+    invoiceId: "ig6laxynpoxFf",
+    title: "ST. Marinette",
+    netTotalAmount: 17300,
+    dueDate: endOfDay(subDays(today, 1)),
+    invoiceDate: subDays(today, 12),
+    isPaid: false,
+    items: [
+      {
+        plan: "Pro plan",
+        amount: 7300,
+      },
+      {
+        plan: "Surcharge",
+        amount: 4800,
+      },
+      {
+        plan: "Custom",
+        amount: 5200,
+      },
+    ],
+  },
+  {
     invoiceId: "2nlbchiq80o",
     title: "Stankonia",
     netTotalAmount: 8000,
@@ -99,9 +121,9 @@ const invoices = [
   },
 ];
 
-async function mockFetch(items) {
+async function mockFetch(items, timeMs = 100) {
   return await new Promise((resolve) =>
-    setTimeout(() => resolve(items), 50 + Math.random() * 100)
+    setTimeout(() => resolve(items), timeMs + Math.random() * 100)
   );
 }
 
@@ -112,4 +134,21 @@ export async function getInvoices() {
 export async function getInvoice(id) {
   const invoice = invoices.find((invoice) => invoice.invoiceId === id);
   return await mockFetch(invoice);
+}
+
+export async function payInvoice(id) {
+  await mockFetch(
+    [
+      ...invoices.map((invoice) => {
+        if (invoice.invoiceId === id) {
+          return { ...invoice, isPaid: true };
+        }
+
+        return invoice;
+      }),
+    ],
+    1200
+  );
+
+  return true;
 }

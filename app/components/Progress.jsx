@@ -13,7 +13,7 @@ export default function Progress({ startPercentage = 0 }) {
         style={{
           width: start + "%",
         }}
-        className={`bg-red-400 ${
+        className={`bg-yellow-500 ${
           start >= 100 ? "rounded-full" : "rounded-l-full"
         }`}
       />
@@ -21,7 +21,7 @@ export default function Progress({ startPercentage = 0 }) {
         style={{
           width: end + "%",
         }}
-        className={`bg-yellow-400 ${
+        className={`bg-green-500 ${
           end >= 100 ? "rounded-full" : "rounded-r-full"
         }`}
       />
